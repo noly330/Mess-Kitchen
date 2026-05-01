@@ -29,12 +29,32 @@ public class KitchenObject : MonoBehaviour
 
     public IKitchenObjectParent GetKitchenObjectParent() => _kitchenObjectParent;
 
-    public void DestorySelf()
+    public void DestroySelf()
     {
         _kitchenObjectParent.ClearKitchenObject();
         Destroy(gameObject);
     }
 
+    public bool TryGetPlate(out PlateKitchenObject plateKitchenObject)
+    {
+        if(this is PlateKitchenObject)
+        {
+            plateKitchenObject = this as PlateKitchenObject;
+            return true;
+        }
+        else
+        {
+            plateKitchenObject = null;
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// 静态方法，用于生成厨房物品
+    /// </summary>
+    /// <param name="kitchenObjectSO"></param>
+    /// <param name="kitchenObjectParent"></param>
+    /// <returns></returns>
     public static KitchenObject SpawnKitchenObject(KitchenObjectSO kitchenObjectSO,IKitchenObjectParent kitchenObjectParent)
     {
         Transform kitchenObejctTransform = Instantiate(kitchenObjectSO.prefab);
