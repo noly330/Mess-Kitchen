@@ -1,20 +1,27 @@
 
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class ProgressBarUI : MonoBehaviour
 {
     [SerializeField] private Image _barImage;
-    [SerializeField] private CuttingCounter _cuttingCounter;
+    private IHasProgress _hasProgress;
+
+
+    private void Awake()
+    {
+        _hasProgress = GetComponentInParent<IHasProgress>();
+    }
 
     private void Start()
     {
-        _cuttingCounter.OnProgressChanged += OnProgressChanged;
+        _hasProgress.OnProgressChanged += OnProgressChanged;
         _barImage.fillAmount = 0;
         Hide();
     }
 
-    private void OnProgressChanged(object sender, CuttingCounter.OnProgressChangedEventArgs e)
+    private void OnProgressChanged(object sender, IHasProgress.OnProgressChangedEventArgs e)
     {
         _barImage.fillAmount = e.progressNormalized;
         if (e.progressNormalized >= 1 || e.progressNormalized <= 0)
