@@ -1,15 +1,20 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class DeliveryManager : MonoBehaviour
 {
+    public event EventHandler OnRecipeSpawned;
+    public event EventHandler OnRecipeCompleted;
+    public event EventHandler OnRecipeSuccess;
+    public event EventHandler OnRecipeFailed;
+
     public static DeliveryManager Instance;
     [SerializeField] private RecipeListSO _recipeListSO;  // 配方列表
     private List<RecipeSO> _waitingRecipeSOList = new List<RecipeSO>();  // 等待配方列表
 
     private float _spawnRecipetimer;
-    private float _spawnRecipetimerMax = 4f;
+    [SerializeField] private float _spawnRecipetimerMax = 10f;
 
     private int _waitingRecipeMax = 4;  // 最大等待配方数
     private void Awake()
@@ -26,9 +31,9 @@ public class DeliveryManager : MonoBehaviour
             if (_waitingRecipeSOList.Count < _waitingRecipeMax)
             {
 
-                RecipeSO waitingRecipeSO = _recipeListSO.recipeSOList[Random.Range(0, _recipeListSO.recipeSOList.Count)];
+                RecipeSO waitingRecipeSO = _recipeListSO.recipeSOList[UnityEngine.Random.Range(0, _recipeListSO.recipeSOList.Count)];
                 _waitingRecipeSOList.Add(waitingRecipeSO);
-                Debug.Log(waitingRecipeSO.recipeName);
+                OnRecipeSpawned?.Invoke(this, EventArgs.Empty);
             }
         }
     }
@@ -62,11 +67,11 @@ public class DeliveryManager : MonoBehaviour
                     }
                 }
 
-                if (plateContentsMatchesRecipe)
+                if (plateContentsMatchesRecipe)  //如果所有食材都找到了，就递送成功
                 {
-                    Debug.Log("玩家交付了正确的配方");
-
                     _waitingRecipeSOList.RemoveAt(i);
+                    OnRecipeCompleted?.Invoke(this, EventArgs.Empty);
+                    OnRecipeSuccess?.Invoke(this, EventArgs.Empty);
                     return;
                 }
             }
@@ -74,5 +79,11 @@ public class DeliveryManager : MonoBehaviour
 
         //TODO: 玩家交付了错误的配方
         Debug.Log("玩家交付了错误的配方");
+        OnRecipeFailed?.Invoke(this, EventArgs.Empty);
+    }
+
+    public List<RecipeSO> GetWaitingRecipeSOList()
+    {
+        return _waitingRecipeSOList;
     }
 }

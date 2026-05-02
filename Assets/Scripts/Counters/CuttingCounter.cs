@@ -8,6 +8,7 @@ public class CuttingCounter : BaseCounter,IHasProgress
     // {
     //     public float progressNormalized;
     // }
+    public static event EventHandler OnAnyCut;
     public event EventHandler OnCut;
     public event EventHandler<IHasProgress.OnProgressChangedEventArgs> OnProgressChanged;
 
@@ -59,6 +60,7 @@ public class CuttingCounter : BaseCounter,IHasProgress
             //TODO: 切割东西
             _cuttingProgress++;
             OnCut?.Invoke(this, EventArgs.Empty);
+            OnAnyCut?.Invoke(this, EventArgs.Empty);
             CuttingRecipeSO cuttingRecipeSO = GetCuttingRecipeSOWithInput(GetKitchenObject().GetKitchenObjectSO());
             OnProgressChanged?.Invoke(this, new IHasProgress.OnProgressChangedEventArgs() { progressNormalized = ((float)_cuttingProgress) / cuttingRecipeSO.cuttingProgressMax });
             if (_cuttingProgress >= cuttingRecipeSO.cuttingProgressMax)
