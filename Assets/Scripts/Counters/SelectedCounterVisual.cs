@@ -5,8 +5,13 @@ using UnityEngine;
 
 public class SelectedCounterVisual : MonoBehaviour
 {
-    [SerializeField] private BaseCounter _baseCounter;
+    private BaseCounter _baseCounter;
     [SerializeField] private GameObject[] _selectedCounterVisuals;
+
+    private void Awake()
+    {
+        _baseCounter = GetComponentInParent<BaseCounter>();
+    }
     private void Start()
     {
         Player.Instance.OnSelectedCounterChanged += OnSelectedCounterChanged;
