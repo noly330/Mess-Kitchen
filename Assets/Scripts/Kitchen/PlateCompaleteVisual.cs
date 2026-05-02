@@ -11,7 +11,7 @@ public class PlateCompaleteVisual : MonoBehaviour
         public KitchenObjectSO kitchenObjectSO;
         public GameObject gameObject;
     }
-    [SerializeField] private PlateKitchenObject _plateKitchenObject;
+    private PlateKitchenObject _plateKitchenObject;
     [SerializeField] private List<KitchenObejctSO_GameObejct> _kitchenOSO_GameObejctList;
 
     private void Awake()

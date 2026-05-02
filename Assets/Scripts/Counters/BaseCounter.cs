@@ -1,10 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class BaseCounter : MonoBehaviour,IKitchenObjectParent
 {
-
+    public static event EventHandler OnAnyObjectPlacedHere;
     [SerializeField] protected Transform _topPoint;
     protected KitchenObject _kitchenObject;  //当前柜台上的物品
     public virtual void Interact(Player player)
@@ -26,10 +27,16 @@ public class BaseCounter : MonoBehaviour,IKitchenObjectParent
     }
 
     public KitchenObject GetKitchenObject() => _kitchenObject;
+
     public void SetKitchenObject(KitchenObject kitchenObject)
     {
         _kitchenObject = kitchenObject;
+        if (_kitchenObject != null)
+        {
+            OnAnyObjectPlacedHere?.Invoke(this, EventArgs.Empty);
+        }
     }
+
     public void ClearKitchenObject()
     {
         _kitchenObject = null;

@@ -5,6 +5,8 @@ using UnityEngine;
 public class Player : MonoBehaviour, IKitchenObjectParent
 {
     public static Player Instance { get; private set; }
+
+    public event EventHandler OnPickedSomething;
     public event EventHandler<SelectedCounterChangedEventArgs> OnSelectedCounterChanged;  //泛型事件
     public class SelectedCounterChangedEventArgs : EventArgs
     {
@@ -161,6 +163,10 @@ public class Player : MonoBehaviour, IKitchenObjectParent
     public void SetKitchenObject(KitchenObject kitchenObject)
     {
         _kitchenObject = kitchenObject;
+        if (_kitchenObject != null)
+        {
+            OnPickedSomething?.Invoke(this, EventArgs.Empty);
+        }
     }
     public void ClearKitchenObject()
     {
