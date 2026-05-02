@@ -9,7 +9,7 @@ public class PlateKitchenObject : KitchenObject
     {
         public KitchenObjectSO kitchenObjectSO;
     }
-    [SerializeField] private List<KitchenObjectSO> _validKitchenObjectSOList;
+    [SerializeField] private List<KitchenObjectSO> _validKitchenObjectSOList;  //可以添加到盘子里的食材
     private List<KitchenObjectSO> kitchenObjectSOList;  //盘子上有哪些食材
 
     private void Awake()
