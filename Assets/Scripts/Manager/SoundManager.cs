@@ -10,6 +10,7 @@ public class SoundManager : MonoBehaviour
 
     private void Awake()
     {
+
         Instance = this;
     }
 

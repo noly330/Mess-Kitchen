@@ -6,6 +6,10 @@ using System;
 public class BaseCounter : MonoBehaviour,IKitchenObjectParent
 {
     public static event EventHandler OnAnyObjectPlacedHere;
+    public static void ResetStaticData()
+    {
+        OnAnyObjectPlacedHere = null;
+    }
     [SerializeField] protected Transform _topPoint;
     protected KitchenObject _kitchenObject;  //当前柜台上的物品
     public virtual void Interact(Player player)
