@@ -6,6 +6,9 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     public event EventHandler OnStateChanged;
+    public event EventHandler OnGamePaused;
+    public event EventHandler OnGameResumed;
+
     public static GameManager Instance;
     private enum State
     {
@@ -18,12 +21,19 @@ public class GameManager : MonoBehaviour
 
     private float _gamePlayingTimerMax = 30f;
     private float _gamePlayingTimer;
+    private bool _isPaused = false;
 
     private void Awake()
     {
         _currentState = State.WaitingToStart;
         Instance = this;
     }
+
+    private void Start()
+    {
+        GameInput.Instance.OnPauseAction += GameInput_OnPauseAction;
+    }
+
 
     private void Update()
     {
@@ -83,5 +93,26 @@ public class GameManager : MonoBehaviour
     public float GetGamePlayingTimerNormalized()
     {
         return 1 - (_gamePlayingTimer / _gamePlayingTimerMax);
+    }
+    private void GameInput_OnPauseAction(object sender, EventArgs e)
+    {
+        TogglePauseGame();
+    }
+
+    public void TogglePauseGame()
+    {
+        if (_isPaused)
+        {
+            Time.timeScale = 1f;
+            _isPaused = false;
+            OnGameResumed?.Invoke(this, EventArgs.Empty);
+        }
+        else
+        {
+            Time.timeScale = 0;
+            _isPaused = true;
+            OnGamePaused?.Invoke(this, EventArgs.Empty);
+        }
+    
     }
 }

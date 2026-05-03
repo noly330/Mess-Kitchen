@@ -6,6 +6,10 @@ using UnityEngine;
 public class TrashCounter : BaseCounter
 {
     public static event EventHandler OnAnyObejctTrashed;
+    new public static void ResetStaticData()
+    {
+        OnAnyObejctTrashed = null;
+    }
     public override void Interact(Player player)
     {
         if (player.HasKitchenObject())
