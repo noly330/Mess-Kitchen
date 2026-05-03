@@ -8,15 +8,16 @@ public class DeliveryManager : MonoBehaviour
     public event EventHandler OnRecipeCompleted;
     public event EventHandler OnRecipeSuccess;
     public event EventHandler OnRecipeFailed;
-
     public static DeliveryManager Instance;
     [SerializeField] private RecipeListSO _recipeListSO;  // 配方列表
     private List<RecipeSO> _waitingRecipeSOList = new List<RecipeSO>();  // 等待配方列表
 
     private float _spawnRecipetimer;
     [SerializeField] private float _spawnRecipetimerMax = 10f;
-
     private int _waitingRecipeMax = 4;  // 最大等待配方数
+    private int _successfulRecipesAmount = 0; // 成功递送的配方数
+    public int GetSuccessfulRecipesAmount() => _successfulRecipesAmount;
+    
     private void Awake()
     {
         Instance = this;
@@ -69,6 +70,7 @@ public class DeliveryManager : MonoBehaviour
 
                 if (plateContentsMatchesRecipe)  //如果所有食材都找到了，就递送成功
                 {
+                    _successfulRecipesAmount++;
                     _waitingRecipeSOList.RemoveAt(i);
                     OnRecipeCompleted?.Invoke(this, EventArgs.Empty);
                     OnRecipeSuccess?.Invoke(this, EventArgs.Empty);
