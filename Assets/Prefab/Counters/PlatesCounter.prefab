@@ -231,6 +231,11 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4472461010448373620, guid: e21b499d164095947b7559f0267f0e63,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4589716710238282922, guid: e21b499d164095947b7559f0267f0e63,
         type: 3}
       propertyPath: m_Name
@@ -339,7 +344,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0baa46873355ad14f84d278eeb811c3b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _baseCounter: {fileID: 8221729341729740821}
   _selectedCounterVisuals:
   - {fileID: 4975173593691852947}
 --- !u!1 &4975173593691852947 stripped
