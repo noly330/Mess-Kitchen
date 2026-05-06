@@ -14,7 +14,6 @@ public class GameInput : MonoBehaviour
     public event EventHandler OnInteractAction;
     public event EventHandler OnInteractAlternateAction;
     public event EventHandler OnPauseAction;
-
     public enum Binding
     {
         MoveUp,

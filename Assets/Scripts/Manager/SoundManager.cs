@@ -34,10 +34,6 @@ public class SoundManager : MonoBehaviour
         TrashCounter.OnAnyObejctTrashed += TrashCounter_OnAnyObejctTrashed;
     }
 
-    public void PlayFootstepsSound(Vector3 position, float volume)
-    {
-        PlaySound(_audioClipRefsSO.footstep, position, volume);
-    }
 
     private void TrashCounter_OnAnyObejctTrashed(object sender, EventArgs e)
     {
@@ -81,6 +77,20 @@ public class SoundManager : MonoBehaviour
     private void PlaySound(AudioClip clip, Vector3 position, float volumeMultiplier = 1f)
     {
         AudioSource.PlayClipAtPoint(clip, position, _volume * volumeMultiplier);
+    }
+
+    public void PlayFootstepsSound(Vector3 position, float volume)
+    {
+        PlaySound(_audioClipRefsSO.footstep, position, volume);
+    }
+    public void PlayCountdownSound()
+    {
+        PlaySound(_audioClipRefsSO.warning, Vector3.zero);
+    }
+
+    public void PlayWarningSound(Vector3 position)
+    {
+        PlaySound(_audioClipRefsSO.warning,position);
     }
 
     private void OnDestroy()
