@@ -20,6 +20,7 @@ public class StoveCounter : BaseCounter, IHasProgress
     [SerializeField] private BurningRecipeSO[] _burningRecipeSOArray;
 
     private StoveCounterState _state = StoveCounterState.Idle;
+    public StoveCounterState GetStoveCounterState() => _state;
     private float _fryingTimer;
     private float _burningTimer;
 
