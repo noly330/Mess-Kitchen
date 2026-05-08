@@ -14,12 +14,29 @@ public class SelectedCounterVisual : MonoBehaviour
     }
     private void Start()
     {
-        //Player.Instance.OnSelectedCounterChanged += OnSelectedCounterChanged;
+        if (Player.LocalInstance != null)
+        {
+
+            Player.LocalInstance.OnSelectedCounterChanged += OnSelectedCounterChanged;
+        }
+        else
+        {
+            Player.OnAnyPlayerSpawned += OnSelectedCounterChanged;
+        }
+    }
+
+    private void OnSelectedCounterChanged(object sender, EventArgs e)
+    {
+        if (Player.LocalInstance != null)
+        {
+            Player.LocalInstance.OnSelectedCounterChanged -= OnSelectedCounterChanged;
+            Player.LocalInstance.OnSelectedCounterChanged += OnSelectedCounterChanged;
+        }
     }
 
     private void OnSelectedCounterChanged(object sender, Player.SelectedCounterChangedEventArgs e)
     {
-        if(_baseCounter == e.selectedCounter)
+        if (_baseCounter == e.selectedCounter)
         {
             ShowSelectedCounterVisual();
         }
@@ -31,7 +48,7 @@ public class SelectedCounterVisual : MonoBehaviour
 
     private void ShowSelectedCounterVisual()
     {
-        foreach(GameObject item in _selectedCounterVisuals)
+        foreach (GameObject item in _selectedCounterVisuals)
         {
             item.SetActive(true);
         }
@@ -39,7 +56,7 @@ public class SelectedCounterVisual : MonoBehaviour
 
     private void HideSelectedCounterVisual()
     {
-        foreach(GameObject item in _selectedCounterVisuals)
+        foreach (GameObject item in _selectedCounterVisuals)
         {
             item.SetActive(false);
         }
