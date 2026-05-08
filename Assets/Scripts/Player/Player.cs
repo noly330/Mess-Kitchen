@@ -1,7 +1,8 @@
 using System;
 using UnityEngine;
+using Unity.Netcode;
 
-public class Player : MonoBehaviour, IKitchenObjectParent
+public class Player : NetworkBehaviour, IKitchenObjectParent
 {
     public static Player Instance { get; private set; }
 
@@ -13,8 +14,8 @@ public class Player : MonoBehaviour, IKitchenObjectParent
     }
 
     [Header("玩家移动参数")]
-    [SerializeField] private float _moveSpeed = 10f;
-    [SerializeField] private float _rotationSpeed = 25f;
+    [SerializeField] private float _moveSpeed = 2f;
+    [SerializeField] private float _rotationSpeed = 15f;
     [SerializeField] private float _interactionDistance = 2f;
 
     [Header("玩家交互参数")]
@@ -32,11 +33,11 @@ public class Player : MonoBehaviour, IKitchenObjectParent
     private void Awake()
     {
 
-        if (Instance != null)
-        {
-            Debug.LogError("超过一个玩家实例！！！");
-        }
-        Instance = this;
+        // if (Instance != null)
+        // {
+        //     Debug.LogError("超过一个玩家实例！！！");
+        // }
+        // Instance = this;
     }
 
     private void Start()
@@ -48,16 +49,21 @@ public class Player : MonoBehaviour, IKitchenObjectParent
 
     private void Update()
     {
+
+        if(!IsOwner)
+        {
+            return;
+        }
         // 在Update中处理输入
         _inputDirection = GameInput.Instance.GetMovementDirectionNormalized();
         _isWalking = _inputDirection != Vector2.zero;
 
         HandleInteractions();
+        HandleMovement();
     }
 
     private void FixedUpdate()
     {
-        HandleMovement();
     }
 
     /// <summary>
@@ -69,7 +75,7 @@ public class Player : MonoBehaviour, IKitchenObjectParent
         Vector2 inputVcetor = GameInput.Instance.GetMovementDirectionNormalized();
         Vector3 moveDirection = new Vector3(inputVcetor.x, 0, inputVcetor.y);
 
-        float moveDistance = _moveSpeed * Time.fixedDeltaTime;
+        float moveDistance = _moveSpeed * Time.deltaTime;
         float playerRadius = 0.7f;
         float playerHeight = 2f;
         bool canMove = !Physics.CapsuleCast(transform.position, transform.position + Vector3.up * playerHeight, playerRadius, moveDirection, moveDistance, _blockingLayerMask);
@@ -100,7 +106,7 @@ public class Player : MonoBehaviour, IKitchenObjectParent
 
         _isWalking = moveDirection != Vector3.zero;
 
-        transform.forward = Vector3.Slerp(transform.forward, moveDirection, _rotationSpeed * Time.fixedDeltaTime);
+        transform.forward = Vector3.Slerp(transform.forward, moveDirection, _rotationSpeed * Time.deltaTime);
     }
 
     /// <summary>

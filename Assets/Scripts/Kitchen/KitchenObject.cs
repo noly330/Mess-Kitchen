@@ -18,9 +18,11 @@ public class KitchenObject : MonoBehaviour
         }
         //设置新的_clearCounter
         _kitchenObjectParent = kitchenObjectParent;
+
+        //TODO感觉有问题，以后要注意一下，因为现在是先设置它为父级再去检查父级有没有物品
         if (_kitchenObjectParent.HasKitchenObject())
         {
-            Debug.LogError("尝试获取该物品的父级已经有厨房物品了");
+            Debug.LogError("The kitchen object parent already has a kitchen object");
         }
         _kitchenObjectParent.SetKitchenObject(this);
         transform.parent = kitchenObjectParent.GetKitchenObjectFollowTransform();
