@@ -131,7 +131,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0baa46873355ad14f84d278eeb811c3b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _baseCounter: {fileID: 2629462239320758592}
   _selectedCounterVisuals:
   - {fileID: 7465579357808970588}
 --- !u!1 &7465579357808970588 stripped
@@ -219,6 +218,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 2629462239320758592}
+    - targetCorrespondingSourceObject: {fileID: 4093400393309246980, guid: 6270662892e5cfb46adc0a1a9762ec43,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 549477110305488666}
   m_SourcePrefab: {fileID: 100100000, guid: 6270662892e5cfb46adc0a1a9762ec43, type: 3}
 --- !u!4 &591598987353454934 stripped
 Transform:
@@ -245,7 +248,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _topPoint: {fileID: 591598987353454934}
-  _kitchenObjectSO: {fileID: 0}
+--- !u!114 &549477110305488666
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 966208541519652942}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 951099334
+  AlwaysReplicateAsRoot: 0
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
 --- !u!4 &2223005468049171124 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3134425922783681790, guid: 6270662892e5cfb46adc0a1a9762ec43,
