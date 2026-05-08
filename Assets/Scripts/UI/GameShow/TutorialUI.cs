@@ -9,7 +9,7 @@ public class TutorialUI : MonoBehaviour
     void Start()
     {
         GameManager.Instance.OnStateChanged += GameManager_OnStateChanged;
-        Show();
+        Hide();
     }
 
     private void GameManager_OnStateChanged(object sender, EventArgs e)

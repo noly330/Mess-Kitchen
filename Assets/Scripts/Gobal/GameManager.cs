@@ -13,12 +13,13 @@ public class GameManager : MonoBehaviour
     private enum State
     {
         WaitingToStart, CountdownToStart, GamePlaying, GameOver
+
     }
 
     private State _currentState;
-    private float _countdownToStartTimer = 3f;
+    private float _countdownToStartTimer = 1f;
 
-    private float _gamePlayingTimerMax = 90f;
+    private float _gamePlayingTimerMax = 300f;
     private float _gamePlayingTimer;
     private bool _isPaused = false;
 
@@ -32,6 +33,10 @@ public class GameManager : MonoBehaviour
     {
         GameInput.Instance.OnPauseAction += GameInput_OnPauseAction;
         GameInput.Instance.OnInteractAction += GameInput_OnInteractAction;
+
+        //先做测试，直接倒记时后面要改
+        _currentState = State.CountdownToStart;
+        OnStateChanged?.Invoke(this, EventArgs.Empty);
     }
 
     private void GameInput_OnInteractAction(object sender, EventArgs e)
@@ -77,7 +82,6 @@ public class GameManager : MonoBehaviour
                 break;
 
         }
-        Debug.Log(_currentState);
     }
 
     public bool IsGamePlaying()
