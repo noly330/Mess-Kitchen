@@ -197,5 +197,10 @@ public class Player : NetworkBehaviour, IKitchenObjectParent
     }
 
     public bool HasKitchenObject() => _kitchenObject != null;
+
+    public NetworkObject GetNetworkObject()
+    {
+        return NetworkObject;
+    }
     #endregion
 }
