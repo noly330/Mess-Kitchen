@@ -3,6 +3,11 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
+/// <summary>
+/// 游戏多玩家管理类
+/// 用于管理游戏中的多玩家同步
+/// 包括生成厨房物品
+/// </summary>
 public class GameMultiplayer : NetworkBehaviour
 {
     public static GameMultiplayer Instance{get ; private set;}
@@ -36,8 +41,10 @@ public class GameMultiplayer : NetworkBehaviour
     {
         KitchenObjectSO kitchenObejctSO = GetKitchenObjectSO(kitchenObjectIndex);
         Transform kitchenObejctTransform = Instantiate(kitchenObejctSO.prefab);
+
+        
         NetworkObject networkObject = kitchenObejctTransform.GetComponent<NetworkObject>();
-        networkObject.Spawn(true);
+        networkObject.Spawn(true);  //在所有客户端生成一个网络对象
 
         KitchenObject kitchenObejct =  kitchenObejctTransform.GetComponent<KitchenObject>();
 
@@ -45,6 +52,7 @@ public class GameMultiplayer : NetworkBehaviour
         kitchenObjectParentNetworkObjectReference.TryGet(out NetworkObject kitchenObjectParentNetworkObject);
         IKitchenObjectParent kitchenObjectParent = kitchenObjectParentNetworkObject.GetComponent<IKitchenObjectParent>();
 
+        //设置跟随对象，在这里有网络同步跟随的方法，不懂就点进去看
         kitchenObejct.SetKitchenObjectParent(kitchenObjectParent);
     }
 
