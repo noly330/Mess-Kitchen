@@ -24,6 +24,8 @@ public class GameMultiplayer : NetworkBehaviour
         Instance = this;
     }
 
+
+    #region  生成厨房物品
     /// <summary>
     /// 静态方法，用于生成厨房物品
     /// </summary>
@@ -65,4 +67,35 @@ public class GameMultiplayer : NetworkBehaviour
     {
         return _kitchenObjectListSO.kitchenObjectSOs[kitchenObjectIndex];
     }
+    #endregion
+    #region  销毁厨房物品
+
+    public void DestoryKitchenObejct(KitchenObject kitchenObject)
+    {
+        DestoryKitchenObejctServerRpc(kitchenObject.NetworkObject);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void DestoryKitchenObejctServerRpc(NetworkObjectReference kitchenObjectNetworkObjectReference)
+    {
+        kitchenObjectNetworkObjectReference.TryGet(out NetworkObject kitchenObjectNetworkObject);
+        KitchenObject kitchenObject = kitchenObjectNetworkObject.GetComponent<KitchenObject>();
+
+        //先在所有客户端中清理父子绑定关系
+        ClearKitchenObjectOnParentClientRpc(kitchenObjectNetworkObjectReference);
+
+        //只有在服务器端才能销毁网络对象
+        kitchenObject.DestroySelf();
+    }
+
+    [ClientRpc]
+    private void ClearKitchenObjectOnParentClientRpc(NetworkObjectReference kitchenObjectNetworkObjectReference)
+    {
+        kitchenObjectNetworkObjectReference.TryGet(out NetworkObject kitchenObjectNetworkObject);
+        KitchenObject kitchenObject = kitchenObjectNetworkObject.GetComponent<KitchenObject>();
+
+        kitchenObject.ClearKitchenObjectOnParent();
+    }
+
+    #endregion
 }
