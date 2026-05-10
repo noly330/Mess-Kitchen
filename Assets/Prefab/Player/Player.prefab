@@ -9,12 +9,12 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1063999271433279658}
-  - component: {fileID: 6176893314798289490}
   - component: {fileID: 7660181981157843014}
   - component: {fileID: 4411217611176859117}
   - component: {fileID: 5112283826811194893}
   - component: {fileID: 5911051229132306462}
-  m_Layer: 0
+  - component: {fileID: 850974823230928312}
+  m_Layer: 3
   m_Name: Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -39,29 +39,6 @@ Transform:
   - {fileID: 1407862406530170783}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!136 &6176893314798289490
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2330702438421418952}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.65
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0, y: 1, z: 0}
 --- !u!114 &7660181981157843014
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -74,15 +51,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 33802f51435bc024d860b821f6e8a738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _spawnPositionList:
+  - {x: -2, y: 0, z: 0}
+  - {x: 2, y: 0, z: 0}
+  - {x: -2, y: 0, z: -2}
+  - {x: 2, y: 0, z: -2}
   _moveSpeed: 10
   _rotationSpeed: 25
   _interactionDistance: 2
   _contersLayerMask:
     serializedVersion: 2
     m_Bits: 64
-  _blockingLayerMask:
+  _collisionsLayerMask:
     serializedVersion: 2
-    m_Bits: 65
+    m_Bits: 73
   _kitchenObjectHoldPoint: {fileID: 2093678828436176845}
 --- !u!114 &4411217611176859117
 MonoBehaviour:
@@ -138,6 +120,27 @@ MonoBehaviour:
   ScaleThreshold: 0.01
   InLocalSpace: 0
   Interpolate: 1
+--- !u!65 &850974823230928312
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2330702438421418952}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1.5, z: 1}
+  m_Center: {x: 0, y: 1, z: 0}
 --- !u!1 &2728670686875505725
 GameObject:
   m_ObjectHideFlags: 0

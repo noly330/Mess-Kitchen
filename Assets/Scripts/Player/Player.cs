@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using Unity.Netcode;
+using System.Collections.Generic;
 
 public class Player : NetworkBehaviour, IKitchenObjectParent
 {
@@ -20,6 +21,7 @@ public class Player : NetworkBehaviour, IKitchenObjectParent
         public BaseCounter selectedCounter;
     }
 
+    [SerializeField] private List<Vector3> _spawnPositionList;
     [Header("玩家移动参数")]
     [SerializeField] private float _moveSpeed = 2f;
     [SerializeField] private float _rotationSpeed = 15f;
@@ -27,11 +29,10 @@ public class Player : NetworkBehaviour, IKitchenObjectParent
 
     [Header("玩家交互参数")]
     [SerializeField] private LayerMask _contersLayerMask;
-    [SerializeField] private LayerMask _blockingLayerMask;
+    [SerializeField] private LayerMask _collisionsLayerMask;
     [SerializeField] private Transform _kitchenObjectHoldPoint;
     private KitchenObject _kitchenObject;
 
-    //
     private Vector2 _inputDirection;
     private bool _isWalking;
     public bool IsWalking => _isWalking;
@@ -49,11 +50,12 @@ public class Player : NetworkBehaviour, IKitchenObjectParent
 
     public override void OnNetworkSpawn()
     {
-        if (!IsOwner)
+        if (IsOwner)
         {
-                return;
+            LocalInstance = this;
         }
-        LocalInstance = this;
+
+        transform.position = _spawnPositionList[(int)OwnerClientId];
         OnAnyPlayerSpawned?.Invoke(this, EventArgs.Empty);
     }
     private void Start()
@@ -65,7 +67,7 @@ public class Player : NetworkBehaviour, IKitchenObjectParent
     private void Update()
     {
 
-        if(!IsOwner)
+        if (!IsOwner)
         {
             return;
         }
@@ -92,8 +94,8 @@ public class Player : NetworkBehaviour, IKitchenObjectParent
 
         float moveDistance = _moveSpeed * Time.deltaTime;
         float playerRadius = 0.7f;
-        float playerHeight = 2f;
-        bool canMove = !Physics.CapsuleCast(transform.position, transform.position + Vector3.up * playerHeight, playerRadius, moveDirection, moveDistance, _blockingLayerMask);
+        //float playerHeight = 2f;
+        bool canMove = !Physics.BoxCast(transform.position, Vector3.one * playerRadius, moveDirection, Quaternion.identity, moveDistance, _collisionsLayerMask);
         if (canMove)
         {
             transform.position += moveDirection * moveDistance;
@@ -102,7 +104,7 @@ public class Player : NetworkBehaviour, IKitchenObjectParent
         {
             Vector3 moveDirX = new Vector3(moveDirection.x, 0, 0).normalized;
 
-            canMove = !Physics.CapsuleCast(transform.position, transform.position + Vector3.up * playerHeight, playerRadius, moveDirX, moveDistance, _blockingLayerMask);
+            canMove = !Physics.BoxCast(transform.position, Vector3.one * playerRadius, moveDirX, Quaternion.identity, moveDistance, _collisionsLayerMask);
             if (canMove)
             {
                 transform.position += moveDirX * moveDistance;
@@ -111,7 +113,7 @@ public class Player : NetworkBehaviour, IKitchenObjectParent
             {
                 Vector3 moveDirZ = new Vector3(0, 0, moveDirection.z).normalized;
 
-                canMove = !Physics.CapsuleCast(transform.position, transform.position + Vector3.up * playerHeight, playerRadius, moveDirZ, moveDistance, _blockingLayerMask);
+                canMove = !Physics.BoxCast(transform.position, Vector3.one * playerRadius, moveDirZ, Quaternion.identity, moveDistance, _collisionsLayerMask);
                 if (canMove)
                 {
                     transform.position += moveDirZ * moveDistance;
@@ -169,7 +171,7 @@ public class Player : NetworkBehaviour, IKitchenObjectParent
     private void OnInteractAlternateAction(object sender, EventArgs e)
     {
         if (!GameManager.Instance.IsGamePlaying()) return;
-        if(_selectedCounter != null)
+        if (_selectedCounter != null)
         {
             _selectedCounter.InteractAlternate(this);
         }
