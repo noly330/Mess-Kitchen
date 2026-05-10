@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class GameManager : NetworkBehaviour
 {
-    
+
     public event EventHandler OnStateChanged;
     public event EventHandler OnGamePaused;
     public event EventHandler OnGameResumed;
@@ -28,12 +28,12 @@ public class GameManager : NetworkBehaviour
     private float _gamePlayingTimerMax = 30f;
     private bool _isPaused = false;
 
-    private Dictionary<ulong,bool> _playerReadyDic;
+    private Dictionary<ulong, bool> _playerReadyDic;
 
     private void Awake()
     {
         Instance = this;
-        _playerReadyDic = new Dictionary<ulong,bool>();
+        _playerReadyDic = new Dictionary<ulong, bool>();
     }
 
 
@@ -59,9 +59,9 @@ public class GameManager : NetworkBehaviour
         _playerReadyDic[serverRpcParams.Receive.SenderClientId] = true;
 
         bool allClientsReady = true;
-        foreach(ulong clientID in NetworkManager.Singleton.ConnectedClientsIds)
+        foreach (ulong clientID in NetworkManager.Singleton.ConnectedClientsIds)
         {
-            if(!_playerReadyDic.ContainsKey(clientID) || _playerReadyDic[clientID] == false)
+            if (!_playerReadyDic.ContainsKey(clientID) || _playerReadyDic[clientID] == false)
             {
                 allClientsReady = false;
                 break;
@@ -77,7 +77,7 @@ public class GameManager : NetworkBehaviour
 
     private void GameInput_OnInteractAction(object sender, EventArgs e)
     {
-        if(_currentState.Value == GameState.WaitingToStart)
+        if (_currentState.Value == GameState.WaitingToStart)
         {
             _isLocalPlayerReady = true;
             OnLoaclPlayerReadyChanged?.Invoke(this, EventArgs.Empty);
@@ -89,7 +89,7 @@ public class GameManager : NetworkBehaviour
 
     private void Update()
     {
-        if(!IsServer)  return;
+        if (!IsServer) return;
 
         switch (_currentState.Value)
         {
@@ -107,7 +107,7 @@ public class GameManager : NetworkBehaviour
                 {
                     _gamePlayingTimer.Value = _gamePlayingTimerMax;
                     _currentState.Value = GameState.GamePlaying;
-                    
+
                 }
                 break;
             case GameState.GamePlaying:
@@ -115,7 +115,7 @@ public class GameManager : NetworkBehaviour
                 if (_gamePlayingTimer.Value <= 0)
                 {
                     _currentState.Value = GameState.GameOver;
-                    
+
                 }
                 break;
             case GameState.GameOver:
@@ -162,10 +162,25 @@ public class GameManager : NetworkBehaviour
         }
         else
         {
-            Time.timeScale = 0;
             _isPaused = true;
             OnGamePaused?.Invoke(this, EventArgs.Empty);
+            if (IsSinglePlayerGame())
+            {
+
+                Time.timeScale = 0;
+            }
+
         }
-    
+
+    }
+
+    private bool IsSinglePlayerGame()
+    {
+        if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsListening)
+        {
+            return true;
+        }
+
+        return NetworkManager.Singleton.ConnectedClientsIds.Count <= 1;
     }
 }

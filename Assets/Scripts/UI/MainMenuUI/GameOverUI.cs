@@ -1,11 +1,22 @@
 using System;
 using TMPro;
+using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameOverUI : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI _recipesDeliveredText;
+    [SerializeField] private Button _playAgainButton;
     
+    private void Awake()
+    {
+        _playAgainButton.onClick.AddListener(() =>
+        {
+            NetworkManager.Singleton.Shutdown();
+            Loader.LoadScene(Loader.Scene.MainMenuScene);
+        });
+    }
     private void Start() {
         GameManager.Instance.OnStateChanged += GameManager_OnStateChanged;
         Hide();
