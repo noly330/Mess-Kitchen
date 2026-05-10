@@ -3,15 +3,28 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TutorialUI : MonoBehaviour
+public class WaitingForOnterPlayerUI : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+
+    private void Start()
     {
+        GameManager.Instance.OnLoaclPlayerReadyChanged += GameManager_OnLoaclPlayerReadyChanged;
         GameManager.Instance.OnStateChanged += GameManager_OnStateChanged;
         Hide();
     }
 
+
+    private void GameManager_OnLoaclPlayerReadyChanged(object sender, EventArgs e)
+    {
+        if (GameManager.Instance.IsLocalPlayerReady)
+        {
+            Show();
+        }
+        else
+        {
+            Hide();
+        }
+    }
     private void GameManager_OnStateChanged(object sender, EventArgs e)
     {
         if (GameManager.Instance.IsCountdownToStartActive())
@@ -24,7 +37,6 @@ public class TutorialUI : MonoBehaviour
     {
         gameObject.SetActive(true);
     }
-
     private void Hide()
     {
         gameObject.SetActive(false);

@@ -27,7 +27,7 @@ public class ClearCounter : BaseCounter
                 {
                     if (plateKitchenObject.TryAddIngredient(GetKitchenObject().GetKitchenObjectSO()))
                     {
-                        GetKitchenObject().DestroySelf();
+                        KitchenObject.DestoryKitchenObject(GetKitchenObject());
                     }
                 }
                 else  //如果玩家没有盘子
@@ -38,7 +38,7 @@ public class ClearCounter : BaseCounter
                         //尝试把玩家受伤的东西放到柜台的盘子上
                         if(plateKitchenObject.TryAddIngredient(player.GetKitchenObject().GetKitchenObjectSO()))
                         {
-                            player.GetKitchenObject().DestroySelf();
+                            KitchenObject.DestoryKitchenObject(player.GetKitchenObject());
                         }
                     }
                 }
