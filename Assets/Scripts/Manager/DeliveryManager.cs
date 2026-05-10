@@ -22,6 +22,7 @@ public class DeliveryManager : NetworkBehaviour
     private void Awake()
     {
         Instance = this;
+        
     }
     private void Update()
     {

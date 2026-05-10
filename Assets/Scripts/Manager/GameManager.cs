@@ -142,6 +142,10 @@ public class GameManager : NetworkBehaviour
     {
         return _currentState.Value == GameState.GameOver;
     }
+    public bool IsWaitingToStart()
+    {
+        return _currentState.Value == GameState.WaitingToStart;
+    }
 
     public float GetGamePlayingTimerNormalized()
     {

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
@@ -23,6 +24,32 @@ public class GameMultiplayer : NetworkBehaviour
         }
         Instance = this;
     }
+
+    public void StartHost()
+    {
+        
+        NetworkManager.Singleton.ConnectionApprovalCallback += NetworkManager_ConnectionApprovalCallback;
+        NetworkManager.Singleton.StartHost();
+    }
+
+    public void StartClient()
+    {
+        NetworkManager.Singleton.StartClient();
+    }
+    private void NetworkManager_ConnectionApprovalCallback(NetworkManager.ConnectionApprovalRequest connectionApprovalRequese, NetworkManager.ConnectionApprovalResponse connectionApprovalResponse)
+    {
+        if (GameManager.Instance.IsWaitingToStart())
+        {
+            connectionApprovalResponse.CreatePlayerObject = true;
+            connectionApprovalResponse.Approved = true;
+        }
+        else
+        {
+            connectionApprovalResponse.Approved = false;
+        }
+
+    }
+
 
 
     #region  生成厨房物品
