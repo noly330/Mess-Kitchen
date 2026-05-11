@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// 游戏多玩家管理类
@@ -11,7 +12,10 @@ using UnityEngine;
 /// </summary>
 public class GameMultiplayer : NetworkBehaviour
 {
+    private const int MAX_PLAYER_AMOUNT = 4;
     public static GameMultiplayer Instance{get ; private set;}
+    public event EventHandler OnTryingToJoinGame;
+    public event EventHandler OnFailedToJoinGame;
 
     [SerializeField] private KitchenObjectListSO _kitchenObjectListSO;
 
@@ -23,6 +27,8 @@ public class GameMultiplayer : NetworkBehaviour
             return;
         }
         Instance = this;
+
+        DontDestroyOnLoad(gameObject);
     }
 
     public void StartHost()
@@ -34,20 +40,41 @@ public class GameMultiplayer : NetworkBehaviour
 
     public void StartClient()
     {
+        OnTryingToJoinGame?.Invoke(this, EventArgs.Empty);
+        NetworkManager.Singleton.OnClientDisconnectCallback += NetworkManager_OnClientDisconnectCallback;
         NetworkManager.Singleton.StartClient();
     }
+
+
     private void NetworkManager_ConnectionApprovalCallback(NetworkManager.ConnectionApprovalRequest connectionApprovalRequese, NetworkManager.ConnectionApprovalResponse connectionApprovalResponse)
     {
-        if (GameManager.Instance.IsWaitingToStart())
-        {
-            connectionApprovalResponse.CreatePlayerObject = true;
-            connectionApprovalResponse.Approved = true;
-        }
-        else
+        if(SceneManager.GetActiveScene().name != Loader.Scene.CharacterSelectScene.ToString())
         {
             connectionApprovalResponse.Approved = false;
+            connectionApprovalResponse.Reason = "游戏已经开始了";
+            return;
         }
+        if(NetworkManager.Singleton.ConnectedClientsIds.Count >= MAX_PLAYER_AMOUNT)
+        {
+            connectionApprovalResponse.Approved = false;
+            connectionApprovalResponse.Reason = "玩家已经满了";
+            return;
+        }
+        connectionApprovalResponse.Approved = true;
+        // if (GameManager.Instance.IsWaitingToStart())
+        // {
+        //     connectionApprovalResponse.CreatePlayerObject = true;
+        //     connectionApprovalResponse.Approved = true;
+        // }
+        // else
+        // {
+        //     connectionApprovalResponse.Approved = false;
+        // }
 
+    }
+    private void NetworkManager_OnClientDisconnectCallback(ulong clientID)
+    {
+        OnFailedToJoinGame?.Invoke(this, EventArgs.Empty);
     }
 
 
