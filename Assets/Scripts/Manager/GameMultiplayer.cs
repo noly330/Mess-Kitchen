@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
@@ -16,8 +15,11 @@ public class GameMultiplayer : NetworkBehaviour
     public static GameMultiplayer Instance{get ; private set;}
     public event EventHandler OnTryingToJoinGame;
     public event EventHandler OnFailedToJoinGame;
+    public event EventHandler OnPlayerDataNetworkListChanged;
 
     [SerializeField] private KitchenObjectListSO _kitchenObjectListSO;
+    [SerializeField] private List<Color> _playerColorList;
+    private NetworkList<PlayerData> _playerDataNetworkList;
 
     private  void Awake()
     {
@@ -29,19 +31,31 @@ public class GameMultiplayer : NetworkBehaviour
         Instance = this;
 
         DontDestroyOnLoad(gameObject);
+        _playerDataNetworkList = new NetworkList<PlayerData>();
+
+        _playerDataNetworkList.OnListChanged += PlayerDataNetworkList_OnListChanged;
+    }
+
+    private void PlayerDataNetworkList_OnListChanged(NetworkListEvent<PlayerData> changeEvent)
+    {
+        OnPlayerDataNetworkListChanged?.Invoke(this, EventArgs.Empty);
     }
 
     public void StartHost()
     {
         
         NetworkManager.Singleton.ConnectionApprovalCallback += NetworkManager_ConnectionApprovalCallback;
+        NetworkManager.Singleton.OnClientConnectedCallback += NetworkManager_OnClientConnectedCallback;
+        NetworkManager.Singleton.OnClientDisconnectCallback += NetworkManager_Server_OnClientDisconnectCallback;
         NetworkManager.Singleton.StartHost();
     }
+
 
     public void StartClient()
     {
         OnTryingToJoinGame?.Invoke(this, EventArgs.Empty);
-        NetworkManager.Singleton.OnClientDisconnectCallback += NetworkManager_OnClientDisconnectCallback;
+        NetworkManager.Singleton.OnClientDisconnectCallback += NetworkManager_Client_OnClientDisconnectCallback;
+
         NetworkManager.Singleton.StartClient();
     }
 
@@ -72,7 +86,26 @@ public class GameMultiplayer : NetworkBehaviour
         // }
 
     }
-    private void NetworkManager_OnClientDisconnectCallback(ulong clientID)
+    private void NetworkManager_OnClientConnectedCallback(ulong clientID)
+    {
+        _playerDataNetworkList.Add(new PlayerData(){
+            clientID = clientID,
+            colorID = GetFirstUnusedColorID(),
+            });
+    }
+    private void NetworkManager_Server_OnClientDisconnectCallback(ulong clientID)
+    {
+        for(int i = 0; i < _playerDataNetworkList.Count; i++)
+        {
+            PlayerData playerData = _playerDataNetworkList[i];
+            if(playerData.clientID == clientID)
+            {
+                _playerDataNetworkList.RemoveAt(i);
+                break;
+            }
+        }
+    }
+    private void NetworkManager_Client_OnClientDisconnectCallback(ulong clientID)
     {
         OnFailedToJoinGame?.Invoke(this, EventArgs.Empty);
     }
@@ -149,6 +182,112 @@ public class GameMultiplayer : NetworkBehaviour
         KitchenObject kitchenObject = kitchenObjectNetworkObject.GetComponent<KitchenObject>();
 
         kitchenObject.ClearKitchenObjectOnParent();
+    }
+
+    #endregion
+
+    public bool IsPlayerIndexConnected(int playerIndex)
+    {
+        return playerIndex < _playerDataNetworkList.Count;
+    }
+
+    #region PlayerData管理
+
+    public int GetPlayerDataIndexFromClientID(ulong clientID)
+    {
+        for(int i = 0; i < _playerDataNetworkList.Count; i++)
+        {
+            if(_playerDataNetworkList[i].clientID == clientID)
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
+    public PlayerData GetPlayerDataFromClientID(ulong clientID)
+    {
+        foreach(PlayerData playerData in _playerDataNetworkList)
+        {
+            if(playerData.clientID == clientID)
+            {
+                return playerData;
+            }
+        }
+        return default;
+    }
+
+    public PlayerData GetLocalPlayerData()
+    {
+        return GetPlayerDataFromClientID(NetworkManager.Singleton.LocalClientId);
+    }
+
+    public PlayerData GetPlayerDataFromPlayerIndex(int playerIndex)
+    {
+        return  _playerDataNetworkList[playerIndex];
+    }
+
+    #endregion
+
+    #region 玩家颜色管理
+
+    public Color GetPlayerColor(int colorID)
+    {
+        return _playerColorList[colorID];
+    }
+
+    public void ChangePlayerColor(int colorID)
+    {
+        ChangePlayerColorServerRpc(colorID);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void ChangePlayerColorServerRpc(int colorID,ServerRpcParams serverRpcParams=default)
+    {
+        if(!IsColorAvailable(colorID))
+        {
+            return;
+        }
+
+        int playerDataIndex = GetPlayerDataIndexFromClientID(serverRpcParams.Receive.SenderClientId);
+        PlayerData playerData = _playerDataNetworkList[playerDataIndex];
+
+        playerData.colorID = colorID;
+        _playerDataNetworkList[playerDataIndex] = playerData;
+
+    }
+
+    private bool IsColorAvailable(int colorID)
+    {
+        foreach(PlayerData playerData in _playerDataNetworkList)
+        {
+            if(playerData.colorID == colorID)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    //获得首个可用的颜色ID
+    private int GetFirstUnusedColorID()
+    {
+        for(int i = 0; i < _playerColorList.Count; i++)
+        {
+            if(IsColorAvailable(i))
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
+    #endregion
+
+    #region 玩家踢出管理
+
+    public void KickPlayer(ulong clientID)
+    {
+        NetworkManager.Singleton.DisconnectClient(clientID);
+        NetworkManager_Server_OnClientDisconnectCallback(clientID);
     }
 
     #endregion

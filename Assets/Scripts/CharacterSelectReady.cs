@@ -2,10 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Netcode;
+using System;
 
 public class CharacterSelectReady : NetworkBehaviour
 {
     public static CharacterSelectReady Instance;
+
+    public event EventHandler OnReadyChanged;
     private Dictionary<ulong, bool> _playerReadyDic;
 
     private void Awake()
@@ -22,7 +25,9 @@ public class CharacterSelectReady : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     private void SetPlayerReadyServerRpc(ServerRpcParams serverRpcParams = default)
     {
+        //ServerRpcParams 是可选的网络参数，你可以用它来获取是谁发起了这个 RPC 调用
         _playerReadyDic[serverRpcParams.Receive.SenderClientId] = true;
+        SetPlayerReadyClientRpc(serverRpcParams.Receive.SenderClientId);
 
         bool allClientsReady = true;
         foreach (ulong clientID in NetworkManager.Singleton.ConnectedClientsIds)
@@ -39,5 +44,17 @@ public class CharacterSelectReady : NetworkBehaviour
             Loader.LoadNetwork(Loader.Scene.GameScene);
         }
         Debug.Log($"allClientsReady: {allClientsReady}");
+    }
+
+    [ClientRpc]
+    private void SetPlayerReadyClientRpc(ulong clientID)
+    {
+        _playerReadyDic[clientID] = true;
+        OnReadyChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public bool IsPlayerReady(ulong clientID)
+    {
+        return _playerReadyDic.ContainsKey(clientID) && _playerReadyDic[clientID];
     }
 }

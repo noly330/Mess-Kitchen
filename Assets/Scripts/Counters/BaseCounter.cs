@@ -15,12 +15,12 @@ public class BaseCounter : NetworkBehaviour,IKitchenObjectParent
     protected KitchenObject _kitchenObject;  //当前柜台上的物品
     public virtual void Interact(Player player)
     {
-        Debug.LogError("子类必须重写这个方法");
+        Debug.LogError("child class must override this method");
     }
 
     public virtual void InteractAlternate(Player player)
     {
-        Debug.Log("如果使用该方法，子类必须重写这个方法");
+        Debug.Log("child class must override this method");
     }
 
 

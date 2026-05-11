@@ -27,7 +27,7 @@ public class GameManager : NetworkBehaviour
     private NetworkVariable<float> _countdownToStartTimer = new NetworkVariable<float>(3f);
 
     private NetworkVariable<float> _gamePlayingTimer = new NetworkVariable<float>(0f);
-    private float _gamePlayingTimerMax = 30f;
+    [SerializeField] private float _gamePlayingTimerMax = 30f;
     private bool _isPaused = false;
 
     private Dictionary<ulong, bool> _playerReadyDic;

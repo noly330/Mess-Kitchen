@@ -21,6 +21,7 @@ public class Player : NetworkBehaviour, IKitchenObjectParent
         public BaseCounter selectedCounter;
     }
 
+    [SerializeField] private PlayerVisual _playerVisual;
     [SerializeField] private List<Vector3> _spawnPositionList;
     [Header("玩家移动参数")]
     [SerializeField] private float _moveSpeed = 2f;
@@ -55,7 +56,7 @@ public class Player : NetworkBehaviour, IKitchenObjectParent
             LocalInstance = this;
         }
 
-        transform.position = _spawnPositionList[(int)OwnerClientId];
+        transform.position = _spawnPositionList[GameMultiplayer.Instance.GetPlayerDataIndexFromClientID(OwnerClientId)];
         OnAnyPlayerSpawned?.Invoke(this, EventArgs.Empty);
         NetworkManager.Singleton.OnClientDisconnectCallback += NetworkManager_OnClientDisconnectCallback;
     }
@@ -64,7 +65,10 @@ public class Player : NetworkBehaviour, IKitchenObjectParent
     {
         if(clientID == OwnerClientId)
         {
-            KitchenObject.DestoryKitchenObject(GetKitchenObject());
+            if(GetKitchenObject() != null)
+            {
+                KitchenObject.DestoryKitchenObject(GetKitchenObject());
+            }
         }
     }
 
@@ -72,6 +76,9 @@ public class Player : NetworkBehaviour, IKitchenObjectParent
     {
         GameInput.Instance.OnInteractAction += OnInteractAction;
         GameInput.Instance.OnInteractAlternateAction += OnInteractAlternateAction;
+
+        PlayerData playerData = GameMultiplayer.Instance.GetPlayerDataFromClientID(OwnerClientId);
+        _playerVisual.SetPlayerColor(GameMultiplayer.Instance.GetPlayerColor(playerData.colorID));
     }
 
     private void Update()
