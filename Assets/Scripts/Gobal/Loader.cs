@@ -23,6 +23,7 @@ public static class Loader
     }
     public static void LoadNetwork(Scene targetScene)
     {
+        //所有已连接的客户端一起加载场景
         NetworkManager.Singleton.SceneManager.LoadScene(targetScene.ToString(), LoadSceneMode.Single);
     }
 

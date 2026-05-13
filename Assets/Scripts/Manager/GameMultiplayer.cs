@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Unity.Netcode;
+using Unity.Services.Authentication;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -11,8 +12,9 @@ using UnityEngine.SceneManagement;
 /// </summary>
 public class GameMultiplayer : NetworkBehaviour
 {
-    private const int MAX_PLAYER_AMOUNT = 4;
-    public static GameMultiplayer Instance{get ; private set;}
+    public const int MAX_PLAYER_AMOUNT = 4;
+    public const string PLAYER_PREFS_PLAYER_NAME_MULITIPLAYER = "PlayerBameMultiplayer";
+    public static GameMultiplayer Instance { get; private set; }
     public event EventHandler OnTryingToJoinGame;
     public event EventHandler OnFailedToJoinGame;
     public event EventHandler OnPlayerDataNetworkListChanged;
@@ -20,10 +22,17 @@ public class GameMultiplayer : NetworkBehaviour
     [SerializeField] private KitchenObjectListSO _kitchenObjectListSO;
     [SerializeField] private List<Color> _playerColorList;
     private NetworkList<PlayerData> _playerDataNetworkList;
-
-    private  void Awake()
+    private string _playerName;
+    public string GetPlayerName() => _playerName;
+    public void SetPlayerName(string playerName)
     {
-        if(Instance != null)
+        _playerName = playerName;
+        PlayerPrefs.SetString(PLAYER_PREFS_PLAYER_NAME_MULITIPLAYER, playerName);
+    }
+
+    private void Awake()
+    {
+        if (Instance != null)
         {
             Destroy(gameObject);
             return;
@@ -31,6 +40,8 @@ public class GameMultiplayer : NetworkBehaviour
         Instance = this;
 
         DontDestroyOnLoad(gameObject);
+
+        _playerName = PlayerPrefs.GetString(PLAYER_PREFS_PLAYER_NAME_MULITIPLAYER, "PlayerName" + UnityEngine.Random.Range(100, 1000));
         _playerDataNetworkList = new NetworkList<PlayerData>();
 
         _playerDataNetworkList.OnListChanged += PlayerDataNetworkList_OnListChanged;
@@ -43,9 +54,10 @@ public class GameMultiplayer : NetworkBehaviour
 
     public void StartHost()
     {
-        
-        NetworkManager.Singleton.ConnectionApprovalCallback += NetworkManager_ConnectionApprovalCallback;
-        NetworkManager.Singleton.OnClientConnectedCallback += NetworkManager_OnClientConnectedCallback;
+
+        NetworkManager.Singleton.ConnectionApprovalCallback += NetworkManager_Server_ConnectionApprovalCallback;
+
+        NetworkManager.Singleton.OnClientConnectedCallback += NetworkManager_Server_OnClientConnectedCallback;
         NetworkManager.Singleton.OnClientDisconnectCallback += NetworkManager_Server_OnClientDisconnectCallback;
         NetworkManager.Singleton.StartHost();
     }
@@ -54,21 +66,23 @@ public class GameMultiplayer : NetworkBehaviour
     public void StartClient()
     {
         OnTryingToJoinGame?.Invoke(this, EventArgs.Empty);
+
+        NetworkManager.Singleton.OnClientConnectedCallback += NetworkManager_Client_OnClientConnectedCallback;
         NetworkManager.Singleton.OnClientDisconnectCallback += NetworkManager_Client_OnClientDisconnectCallback;
 
         NetworkManager.Singleton.StartClient();
     }
 
 
-    private void NetworkManager_ConnectionApprovalCallback(NetworkManager.ConnectionApprovalRequest connectionApprovalRequese, NetworkManager.ConnectionApprovalResponse connectionApprovalResponse)
+    private void NetworkManager_Server_ConnectionApprovalCallback(NetworkManager.ConnectionApprovalRequest connectionApprovalRequese, NetworkManager.ConnectionApprovalResponse connectionApprovalResponse)
     {
-        if(SceneManager.GetActiveScene().name != Loader.Scene.CharacterSelectScene.ToString())
+        if (SceneManager.GetActiveScene().name != Loader.Scene.CharacterSelectScene.ToString())
         {
             connectionApprovalResponse.Approved = false;
             connectionApprovalResponse.Reason = "游戏已经开始了";
             return;
         }
-        if(NetworkManager.Singleton.ConnectedClientsIds.Count >= MAX_PLAYER_AMOUNT)
+        if (NetworkManager.Singleton.ConnectedClientsIds.Count >= MAX_PLAYER_AMOUNT)
         {
             connectionApprovalResponse.Approved = false;
             connectionApprovalResponse.Reason = "玩家已经满了";
@@ -86,28 +100,59 @@ public class GameMultiplayer : NetworkBehaviour
         // }
 
     }
-    private void NetworkManager_OnClientConnectedCallback(ulong clientID)
+
+    /// <summary>
+    /// 只能有服务器执行，服务器添加了新的玩家数据到网络列表中，因为这是网络变量，会自动同步到所有客户端，所以客户端不需要执行
+    /// </summary>
+    /// <param name="clientID"></param>
+    private void NetworkManager_Server_OnClientConnectedCallback(ulong clientID)
     {
-        _playerDataNetworkList.Add(new PlayerData(){
+        _playerDataNetworkList.Add(new PlayerData()
+        {
             clientID = clientID,
             colorID = GetFirstUnusedColorID(),
-            });
+        });
+
+        SetPlayerNameServerRpc(_playerName);
+        SetPlayerIDServerRpc(AuthenticationService.Instance.PlayerId);
     }
     private void NetworkManager_Server_OnClientDisconnectCallback(ulong clientID)
     {
-        for(int i = 0; i < _playerDataNetworkList.Count; i++)
+        for (int i = 0; i < _playerDataNetworkList.Count; i++)
         {
             PlayerData playerData = _playerDataNetworkList[i];
-            if(playerData.clientID == clientID)
+            if (playerData.clientID == clientID)
             {
                 _playerDataNetworkList.RemoveAt(i);
                 break;
             }
         }
     }
+    private void NetworkManager_Client_OnClientConnectedCallback(ulong clientID)
+    {
+        SetPlayerNameServerRpc(_playerName);
+        SetPlayerIDServerRpc(AuthenticationService.Instance.PlayerId);
+    }
     private void NetworkManager_Client_OnClientDisconnectCallback(ulong clientID)
     {
         OnFailedToJoinGame?.Invoke(this, EventArgs.Empty);
+    }
+    [ServerRpc(RequireOwnership = false)]
+    private void SetPlayerNameServerRpc(string playerName, ServerRpcParams serverRpcParams = default)
+    {
+        int playerDataIndex = GetPlayerDataIndexFromClientID(serverRpcParams.Receive.SenderClientId);
+        PlayerData playerData = _playerDataNetworkList[playerDataIndex];
+        playerData.playerName = playerName;
+        _playerDataNetworkList[playerDataIndex] = playerData;
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void SetPlayerIDServerRpc(string playerID, ServerRpcParams serverRpcParams = default)
+    {
+        int playerDataIndex = GetPlayerDataIndexFromClientID(serverRpcParams.Receive.SenderClientId);
+        PlayerData playerData = _playerDataNetworkList[playerDataIndex];
+        playerData.playerID = playerID;
+        _playerDataNetworkList[playerDataIndex] = playerData;
     }
 
 
@@ -119,23 +164,23 @@ public class GameMultiplayer : NetworkBehaviour
     /// <param name="kitchenObjectSO"></param>
     /// <param name="kitchenObjectParent"></param>
     /// <returns></returns>
-    public void SpawnKitchenObject(KitchenObjectSO kitchenObjectSO,IKitchenObjectParent kitchenObjectParent)
+    public void SpawnKitchenObject(KitchenObjectSO kitchenObjectSO, IKitchenObjectParent kitchenObjectParent)
     {
 
-        SpawnKitchenObjectServerRpc(GetKitchenObjectSOIndex(kitchenObjectSO),kitchenObjectParent.GetNetworkObject());
+        SpawnKitchenObjectServerRpc(GetKitchenObjectSOIndex(kitchenObjectSO), kitchenObjectParent.GetNetworkObject());
     }
 
     [ServerRpc(RequireOwnership = false)]
-    private void SpawnKitchenObjectServerRpc(int kitchenObjectIndex,NetworkObjectReference kitchenObjectParentNetworkObjectReference)
+    private void SpawnKitchenObjectServerRpc(int kitchenObjectIndex, NetworkObjectReference kitchenObjectParentNetworkObjectReference)
     {
         KitchenObjectSO kitchenObejctSO = GetKitchenObjectSOFromIndex(kitchenObjectIndex);
         Transform kitchenObejctTransform = Instantiate(kitchenObejctSO.prefab);
 
-        
+
         NetworkObject networkObject = kitchenObejctTransform.GetComponent<NetworkObject>();
         networkObject.Spawn(true);  //在所有客户端生成一个网络对象
 
-        KitchenObject kitchenObejct =  kitchenObejctTransform.GetComponent<KitchenObject>();
+        KitchenObject kitchenObejct = kitchenObejctTransform.GetComponent<KitchenObject>();
 
         // 从网络对象引用中获取父对象
         kitchenObjectParentNetworkObjectReference.TryGet(out NetworkObject kitchenObjectParentNetworkObject);
@@ -195,9 +240,9 @@ public class GameMultiplayer : NetworkBehaviour
 
     public int GetPlayerDataIndexFromClientID(ulong clientID)
     {
-        for(int i = 0; i < _playerDataNetworkList.Count; i++)
+        for (int i = 0; i < _playerDataNetworkList.Count; i++)
         {
-            if(_playerDataNetworkList[i].clientID == clientID)
+            if (_playerDataNetworkList[i].clientID == clientID)
             {
                 return i;
             }
@@ -206,9 +251,9 @@ public class GameMultiplayer : NetworkBehaviour
     }
     public PlayerData GetPlayerDataFromClientID(ulong clientID)
     {
-        foreach(PlayerData playerData in _playerDataNetworkList)
+        foreach (PlayerData playerData in _playerDataNetworkList)
         {
-            if(playerData.clientID == clientID)
+            if (playerData.clientID == clientID)
             {
                 return playerData;
             }
@@ -223,7 +268,7 @@ public class GameMultiplayer : NetworkBehaviour
 
     public PlayerData GetPlayerDataFromPlayerIndex(int playerIndex)
     {
-        return  _playerDataNetworkList[playerIndex];
+        return _playerDataNetworkList[playerIndex];
     }
 
     #endregion
@@ -241,9 +286,9 @@ public class GameMultiplayer : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = false)]
-    private void ChangePlayerColorServerRpc(int colorID,ServerRpcParams serverRpcParams=default)
+    private void ChangePlayerColorServerRpc(int colorID, ServerRpcParams serverRpcParams = default)
     {
-        if(!IsColorAvailable(colorID))
+        if (!IsColorAvailable(colorID))
         {
             return;
         }
@@ -258,9 +303,9 @@ public class GameMultiplayer : NetworkBehaviour
 
     private bool IsColorAvailable(int colorID)
     {
-        foreach(PlayerData playerData in _playerDataNetworkList)
+        foreach (PlayerData playerData in _playerDataNetworkList)
         {
-            if(playerData.colorID == colorID)
+            if (playerData.colorID == colorID)
             {
                 return false;
             }
@@ -271,9 +316,9 @@ public class GameMultiplayer : NetworkBehaviour
     //获得首个可用的颜色ID
     private int GetFirstUnusedColorID()
     {
-        for(int i = 0; i < _playerColorList.Count; i++)
+        for (int i = 0; i < _playerColorList.Count; i++)
         {
-            if(IsColorAvailable(i))
+            if (IsColorAvailable(i))
             {
                 return i;
             }

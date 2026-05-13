@@ -42,6 +42,7 @@ public class CharacterSelectReady : NetworkBehaviour
         if (allClientsReady)
         {
             Loader.LoadNetwork(Loader.Scene.GameScene);
+            GameLobby.Instance.DeleteLobby();  //服务端删除房间
         }
         Debug.Log($"allClientsReady: {allClientsReady}");
     }

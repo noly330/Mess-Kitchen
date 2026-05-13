@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.TextCore.Text;
@@ -11,6 +12,7 @@ public class CharacterSelectPlayer : MonoBehaviour
     [SerializeField] private int _playerIndex;
     [SerializeField] private GameObject _readyGameObject;
     [SerializeField] private Button _kickButton;
+    [SerializeField] private TextMeshPro _playerNameText;
     private PlayerVisual _playerVisual;
 
     private void Awake()
@@ -21,6 +23,7 @@ public class CharacterSelectPlayer : MonoBehaviour
         {
             PlayerData playerData = GameMultiplayer.Instance.GetPlayerDataFromPlayerIndex(_playerIndex);
             GameMultiplayer.Instance.KickPlayer(playerData.clientID);
+            GameLobby.Instance.KickPlayer(playerData.playerID.ToString());
         });
     }
     private void Start()
@@ -49,7 +52,10 @@ public class CharacterSelectPlayer : MonoBehaviour
             Show();
             PlayerData playerData = GameMultiplayer.Instance.GetPlayerDataFromPlayerIndex(_playerIndex);
             _readyGameObject.SetActive(CharacterSelectReady.Instance.IsPlayerReady(playerData.clientID));
+
+            _playerNameText.text = playerData.playerName.ToString();
             _playerVisual.SetPlayerColor(GameMultiplayer.Instance.GetPlayerColor(playerData.colorID));
+
         }
         else
         {
