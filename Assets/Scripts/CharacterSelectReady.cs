@@ -26,8 +26,8 @@ public class CharacterSelectReady : NetworkBehaviour
     private void SetPlayerReadyServerRpc(ServerRpcParams serverRpcParams = default)
     {
         //ServerRpcParams 是可选的网络参数，你可以用它来获取是谁发起了这个 RPC 调用
-        _playerReadyDic[serverRpcParams.Receive.SenderClientId] = true;
         SetPlayerReadyClientRpc(serverRpcParams.Receive.SenderClientId);
+        _playerReadyDic[serverRpcParams.Receive.SenderClientId] = true;
 
         bool allClientsReady = true;
         foreach (ulong clientID in NetworkManager.Singleton.ConnectedClientsIds)
@@ -41,8 +41,8 @@ public class CharacterSelectReady : NetworkBehaviour
 
         if (allClientsReady)
         {
-            Loader.LoadNetwork(Loader.Scene.GameScene);
             GameLobby.Instance.DeleteLobby();  //服务端删除房间
+            Loader.LoadNetwork(Loader.Scene.GameScene);
         }
         Debug.Log($"allClientsReady: {allClientsReady}");
     }

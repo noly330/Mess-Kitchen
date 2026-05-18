@@ -17,15 +17,16 @@ public class CharacterSelectUI : MonoBehaviour
     {
         _mainMenuButton.onClick.AddListener(() =>
         {
+            GameLobby.Instance.LeaveLobby();
             //安全地断开所有网络连接，并清理 NetworkManager 的单例实例
             NetworkManager.Singleton.Shutdown();
-            GameLobby.Instance.LeaveLobby();
             Loader.LoadScene(Loader.Scene.MainMenuScene);
         });
         _readyButton.onClick.AddListener(() =>
         {
             CharacterSelectReady.Instance.SetPlayerReady();
         });
+
     }
 
     private void Start()

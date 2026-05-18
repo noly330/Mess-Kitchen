@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Unity.Netcode;
+using Unity.Netcode.Transports.UTP;
 using Unity.Services.Authentication;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -15,6 +16,7 @@ public class GameMultiplayer : NetworkBehaviour
     public const int MAX_PLAYER_AMOUNT = 4;
     public const string PLAYER_PREFS_PLAYER_NAME_MULITIPLAYER = "PlayerBameMultiplayer";
     public static GameMultiplayer Instance { get; private set; }
+    public static bool _playMultiplayer;
     public event EventHandler OnTryingToJoinGame;
     public event EventHandler OnFailedToJoinGame;
     public event EventHandler OnPlayerDataNetworkListChanged;
@@ -45,6 +47,19 @@ public class GameMultiplayer : NetworkBehaviour
         _playerDataNetworkList = new NetworkList<PlayerData>();
 
         _playerDataNetworkList.OnListChanged += PlayerDataNetworkList_OnListChanged;
+
+        if (!_playMultiplayer)
+        {
+            StartCoroutine(StartSinglePlayerAfterInit());
+        }
+    }
+
+    private System.Collections.IEnumerator StartSinglePlayerAfterInit()
+    {
+        yield return null;
+        NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData("127.0.0.1", 7777);
+        StartHost();
+        Loader.LoadNetwork(Loader.Scene.GameScene);
     }
 
     private void PlayerDataNetworkList_OnListChanged(NetworkListEvent<PlayerData> changeEvent)
@@ -174,17 +189,22 @@ public class GameMultiplayer : NetworkBehaviour
     private void SpawnKitchenObjectServerRpc(int kitchenObjectIndex, NetworkObjectReference kitchenObjectParentNetworkObjectReference)
     {
         KitchenObjectSO kitchenObejctSO = GetKitchenObjectSOFromIndex(kitchenObjectIndex);
-        Transform kitchenObejctTransform = Instantiate(kitchenObejctSO.prefab);
 
+
+        // 从网络对象引用中获取父对象
+        kitchenObjectParentNetworkObjectReference.TryGet(out NetworkObject kitchenObjectParentNetworkObject);
+        IKitchenObjectParent kitchenObjectParent = kitchenObjectParentNetworkObject.GetComponent<IKitchenObjectParent>();
+
+        if(kitchenObjectParent.HasKitchenObject()) return;  //防止延迟高的时候玩家狂点，导致生成多个物品
+
+        Transform kitchenObejctTransform = Instantiate(kitchenObejctSO.prefab);
 
         NetworkObject networkObject = kitchenObejctTransform.GetComponent<NetworkObject>();
         networkObject.Spawn(true);  //在所有客户端生成一个网络对象
 
         KitchenObject kitchenObejct = kitchenObejctTransform.GetComponent<KitchenObject>();
 
-        // 从网络对象引用中获取父对象
-        kitchenObjectParentNetworkObjectReference.TryGet(out NetworkObject kitchenObjectParentNetworkObject);
-        IKitchenObjectParent kitchenObjectParent = kitchenObjectParentNetworkObject.GetComponent<IKitchenObjectParent>();
+        
 
         //设置跟随对象，在这里有网络同步跟随的方法，不懂就点进去看
         kitchenObejct.SetKitchenObjectParent(kitchenObjectParent);
@@ -211,6 +231,8 @@ public class GameMultiplayer : NetworkBehaviour
     private void DestoryKitchenObejctServerRpc(NetworkObjectReference kitchenObjectNetworkObjectReference)
     {
         kitchenObjectNetworkObjectReference.TryGet(out NetworkObject kitchenObjectNetworkObject);
+
+        if(kitchenObjectNetworkObject == null) return;  //防止延迟高的时候玩家狂点
         KitchenObject kitchenObject = kitchenObjectNetworkObject.GetComponent<KitchenObject>();
 
         //先在所有客户端中清理父子绑定关系

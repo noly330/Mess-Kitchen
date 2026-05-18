@@ -57,7 +57,7 @@ public class LobbyUI : MonoBehaviour
 
     private void GameLobby_OnLobbyListChanged(object sender, GameLobby.OnLobbyListChangedEventArgs e)
     {
-        UpdateLobbyList(e.LobbyList);
+        UpdateLobbyList(e.lobbyList);
     }
 
     private void UpdateLobbyList(List<Lobby> lobbyList)
@@ -78,5 +78,10 @@ public class LobbyUI : MonoBehaviour
             LobbyListSingleUI lobbyListSingleUI = lobbyTransform.GetComponent<LobbyListSingleUI>();
             lobbyListSingleUI.SetLobby(lobby);
         }
+    }
+
+    private void OnDestroy()
+    {
+        GameLobby.Instance.OnLobbyListChanged -= GameLobby_OnLobbyListChanged;
     }
 }

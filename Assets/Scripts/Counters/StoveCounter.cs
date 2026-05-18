@@ -167,6 +167,8 @@ public class StoveCounter : BaseCounter, IHasProgress
     private void SetStoveStateIdleServerRpc()
     {
         _state.Value = StoveCounterState.Idle;
+        _fryingTimer.Value = 0;
+        _burningTimer.Value = 0;
     }
 
     [ServerRpc(RequireOwnership = false)]

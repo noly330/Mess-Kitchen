@@ -9295,7 +9295,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   GlobalObjectIdHash: 2407234362
+  InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
 --- !u!1 &1036458216
@@ -13700,8 +13705,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1691816250}
-  - component: {fileID: 1691816251}
   - component: {fileID: 1691816252}
+  - component: {fileID: 1691816251}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -13738,7 +13743,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _playerPrefab: {fileID: 1063999271433279658, guid: 2123e84c6837837439f2dbe7e6fe0657,
     type: 3}
-  _gamePlayingTimerMax: 300
+  _gamePlayingTimerMax: 240
 --- !u!114 &1691816252
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13752,7 +13757,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   GlobalObjectIdHash: 2153390364
+  InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
 --- !u!1 &1692459787
